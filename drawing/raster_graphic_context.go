@@ -226,6 +226,7 @@ func (rgc *RasterGraphicContext) Stroke(paths ...*Path) {
 
 	stroker := NewLineStroker(rgc.current.Cap, rgc.current.Join, Transformer{Tr: rgc.current.Tr, Flattener: FtLineBuilder{Adder: rgc.strokeRasterizer}})
 	stroker.HalfLineWidth = rgc.current.LineWidth / 2
+	stroker.MiterLimit = rgc.current.MiterLimit
 
 	var liner Flattener
 	if rgc.current.Dash != nil && len(rgc.current.Dash) > 0 {
@@ -263,6 +264,7 @@ func (rgc *RasterGraphicContext) FillStroke(paths ...*Path) {
 
 	stroker := NewLineStroker(rgc.current.Cap, rgc.current.Join, Transformer{Tr: rgc.current.Tr, Flattener: FtLineBuilder{Adder: rgc.strokeRasterizer}})
 	stroker.HalfLineWidth = rgc.current.LineWidth / 2
+	stroker.MiterLimit = rgc.current.MiterLimit
 
 	var liner Flattener
 	if rgc.current.Dash != nil && len(rgc.current.Dash) > 0 {

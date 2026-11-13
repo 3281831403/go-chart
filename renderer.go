@@ -33,6 +33,15 @@ type Renderer interface {
 	// SetStrokeDashArray sets the stroke dash array.
 	SetStrokeDashArray(dashArray []float64)
 
+	// SetStrokeLineCap sets the stroke line cap.
+	SetStrokeLineCap(lineCap LineCap)
+
+	// SetStrokeLineJoin sets the stroke line join.
+	SetStrokeLineJoin(lineJoin LineJoin)
+
+	// SetStrokeMiterLimit sets the stroke miter limit.
+	SetStrokeMiterLimit(miterLimit float64)
+
 	// MoveTo moves the cursor to a given point.
 	MoveTo(x, y int)
 

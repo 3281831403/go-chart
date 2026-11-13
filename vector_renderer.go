@@ -97,6 +97,21 @@ func (vr *vectorRenderer) SetStrokeDashArray(dashArray []float64) {
 	vr.s.StrokeDashArray = dashArray
 }
 
+// SetStrokeLineCap sets the stroke line cap.
+func (vr *vectorRenderer) SetStrokeLineCap(lineCap LineCap) {
+	vr.s.StrokeLineCap = lineCap
+}
+
+// SetStrokeLineJoin sets the stroke line join.
+func (vr *vectorRenderer) SetStrokeLineJoin(lineJoin LineJoin) {
+	vr.s.StrokeLineJoin = lineJoin
+}
+
+// SetStrokeMiterLimit sets the stroke miter limit.
+func (vr *vectorRenderer) SetStrokeMiterLimit(miterLimit float64) {
+	vr.s.StrokeMiterLimit = miterLimit
+}
+
 // MoveTo implements the interface method.
 func (vr *vectorRenderer) MoveTo(x, y int) {
 	vr.p = append(vr.p, fmt.Sprintf("M %d %d", x, y))
@@ -344,6 +359,18 @@ func (c *canvas) styleAsSVG(s Style) string {
 		pieces = append(pieces, "stroke:"+sc.String())
 	} else {
 		pieces = append(pieces, "stroke:none")
+	}
+
+	if s.StrokeLineCap != LineCapUnset {
+		pieces = append(pieces, "stroke-linecap:"+string(s.StrokeLineCap))
+	}
+
+	if s.StrokeLineJoin != LineJoinUnset {
+		pieces = append(pieces, "stroke-linejoin:"+string(s.StrokeLineJoin))
+	}
+
+	if s.StrokeMiterLimit != 0 {
+		pieces = append(pieces, "stroke-miterlimit:"+fmt.Sprintf("%v", s.StrokeMiterLimit))
 	}
 
 	if !fnc.IsZero() {

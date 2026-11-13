@@ -66,6 +66,21 @@ func (rr *rasterRenderer) SetStrokeDashArray(dashArray []float64) {
 	rr.s.StrokeDashArray = dashArray
 }
 
+// SetStrokeLineCap sets the stroke line cap.
+func (rr *rasterRenderer) SetStrokeLineCap(lineCap LineCap) {
+	rr.s.StrokeLineCap = lineCap
+}
+
+// SetStrokeLineJoin sets the stroke line join.
+func (rr *rasterRenderer) SetStrokeLineJoin(lineJoin LineJoin) {
+	rr.s.StrokeLineJoin = lineJoin
+}
+
+// SetStrokeMiterLimit sets the stroke miter limit.
+func (rr *rasterRenderer) SetStrokeMiterLimit(miterLimit float64) {
+	rr.s.StrokeMiterLimit = miterLimit
+}
+
 // SetFillColor implements the interface method.
 func (rr *rasterRenderer) SetFillColor(c drawing.Color) {
 	rr.s.FillColor = c
@@ -101,6 +116,9 @@ func (rr *rasterRenderer) Stroke() {
 	rr.gc.SetStrokeColor(rr.s.StrokeColor)
 	rr.gc.SetLineWidth(rr.s.StrokeWidth)
 	rr.gc.SetLineDash(rr.s.StrokeDashArray, 0)
+	rr.gc.SetLineCap(rr.s.StrokeLineCap.drawingLineCap())
+	rr.gc.SetLineJoin(rr.s.StrokeLineJoin.drawingLineJoin())
+	rr.gc.SetMiterLimit(rr.s.GetStrokeMiterLimit(DefaultStrokeMiterLimit))
 	rr.gc.Stroke()
 }
 
@@ -116,6 +134,9 @@ func (rr *rasterRenderer) FillStroke() {
 	rr.gc.SetStrokeColor(rr.s.StrokeColor)
 	rr.gc.SetLineWidth(rr.s.StrokeWidth)
 	rr.gc.SetLineDash(rr.s.StrokeDashArray, 0)
+	rr.gc.SetLineCap(rr.s.StrokeLineCap.drawingLineCap())
+	rr.gc.SetLineJoin(rr.s.StrokeLineJoin.drawingLineJoin())
+	rr.gc.SetMiterLimit(rr.s.GetStrokeMiterLimit(DefaultStrokeMiterLimit))
 	rr.gc.FillStroke()
 }
 

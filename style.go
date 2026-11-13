@@ -51,6 +51,12 @@ type Style struct {
 	StrokeWidth     float64
 	StrokeColor     drawing.Color
 	StrokeDashArray []float64
+	StrokeLineCap   LineCap
+	StrokeLineJoin  LineJoin
+	// StrokeMiterLimit is the maximum ratio of the miter length to half
+	// the stroke width before a miter join degrades to a bevel join.
+	// Zero means the renderer default (DefaultStrokeMiterLimit).
+	StrokeMiterLimit float64
 
 	DotColor drawing.Color
 	DotWidth float64
@@ -76,6 +82,9 @@ func (s Style) IsZero() bool {
 	return !s.Hidden &&
 		s.StrokeColor.IsZero() &&
 		s.StrokeWidth == 0 &&
+		s.StrokeLineCap == LineCapUnset &&
+		s.StrokeLineJoin == LineJoinUnset &&
+		s.StrokeMiterLimit == 0 &&
 		s.DotColor.IsZero() &&
 		s.DotWidth == 0 &&
 		s.FillColor.IsZero() &&
@@ -131,6 +140,24 @@ func (s Style) String() string {
 		output = append(output, fmt.Sprintf("\"stroke_dash_array\": [%s]", dashArray))
 	} else {
 		output = append(output, "\"stroke_dash_array\": null")
+	}
+
+	if s.StrokeLineCap != LineCapUnset {
+		output = append(output, fmt.Sprintf("\"stroke_line_cap\": %s", s.StrokeLineCap))
+	} else {
+		output = append(output, "\"stroke_line_cap\": null")
+	}
+
+	if s.StrokeLineJoin != LineJoinUnset {
+		output = append(output, fmt.Sprintf("\"stroke_line_join\": %s", s.StrokeLineJoin))
+	} else {
+		output = append(output, "\"stroke_line_join\": null")
+	}
+
+	if s.StrokeMiterLimit != 0 {
+		output = append(output, fmt.Sprintf("\"stroke_miter_limit\": %0.2f", s.StrokeMiterLimit))
+	} else {
+		output = append(output, "\"stroke_miter_limit\": null")
 	}
 
 	if s.DotWidth >= 0 {
@@ -249,6 +276,39 @@ func (s Style) GetStrokeDashArray(defaults ...[]float64) []float64 {
 	return s.StrokeDashArray
 }
 
+// GetStrokeLineCap returns the stroke line cap.
+func (s Style) GetStrokeLineCap(defaults ...LineCap) LineCap {
+	if s.StrokeLineCap == LineCapUnset {
+		if len(defaults) > 0 {
+			return defaults[0]
+		}
+		return LineCapUnset
+	}
+	return s.StrokeLineCap
+}
+
+// GetStrokeLineJoin returns the stroke line join.
+func (s Style) GetStrokeLineJoin(defaults ...LineJoin) LineJoin {
+	if s.StrokeLineJoin == LineJoinUnset {
+		if len(defaults) > 0 {
+			return defaults[0]
+		}
+		return LineJoinUnset
+	}
+	return s.StrokeLineJoin
+}
+
+// GetStrokeMiterLimit returns the stroke miter limit.
+func (s Style) GetStrokeMiterLimit(defaults ...float64) float64 {
+	if s.StrokeMiterLimit == 0 {
+		if len(defaults) > 0 {
+			return defaults[0]
+		}
+		return 0
+	}
+	return s.StrokeMiterLimit
+}
+
 // GetFontSize gets the font size.
 func (s Style) GetFontSize(defaults ...float64) float64 {
 	if s.FontSize == 0 {
@@ -353,6 +413,9 @@ func (s Style) WriteToRenderer(r Renderer) {
 	r.SetStrokeColor(s.GetStrokeColor())
 	r.SetStrokeWidth(s.GetStrokeWidth())
 	r.SetStrokeDashArray(s.GetStrokeDashArray())
+	r.SetStrokeLineCap(s.GetStrokeLineCap())
+	r.SetStrokeLineJoin(s.GetStrokeLineJoin())
+	r.SetStrokeMiterLimit(s.GetStrokeMiterLimit())
 	r.SetFillColor(s.GetFillColor())
 	r.SetFont(s.GetFont())
 	r.SetFontColor(s.GetFontColor())
@@ -370,6 +433,9 @@ func (s Style) WriteDrawingOptionsToRenderer(r Renderer) {
 	r.SetStrokeColor(s.GetStrokeColor())
 	r.SetStrokeWidth(s.GetStrokeWidth())
 	r.SetStrokeDashArray(s.GetStrokeDashArray())
+	r.SetStrokeLineCap(s.GetStrokeLineCap())
+	r.SetStrokeLineJoin(s.GetStrokeLineJoin())
+	r.SetStrokeMiterLimit(s.GetStrokeMiterLimit())
 	r.SetFillColor(s.GetFillColor())
 }
 
@@ -388,6 +454,9 @@ func (s Style) InheritFrom(defaults Style) (final Style) {
 	final.StrokeColor = s.GetStrokeColor(defaults.StrokeColor)
 	final.StrokeWidth = s.GetStrokeWidth(defaults.StrokeWidth)
 	final.StrokeDashArray = s.GetStrokeDashArray(defaults.StrokeDashArray)
+	final.StrokeLineCap = s.GetStrokeLineCap(defaults.StrokeLineCap)
+	final.StrokeLineJoin = s.GetStrokeLineJoin(defaults.StrokeLineJoin)
+	final.StrokeMiterLimit = s.GetStrokeMiterLimit(defaults.StrokeMiterLimit)
 
 	final.DotColor = s.GetDotColor(defaults.DotColor)
 	final.DotWidth = s.GetDotWidth(defaults.DotWidth)
@@ -412,10 +481,13 @@ func (s Style) InheritFrom(defaults Style) (final Style) {
 // GetStrokeOptions returns the stroke components.
 func (s Style) GetStrokeOptions() Style {
 	return Style{
-		ClassName:       s.ClassName,
-		StrokeDashArray: s.StrokeDashArray,
-		StrokeColor:     s.StrokeColor,
-		StrokeWidth:     s.StrokeWidth,
+		ClassName:        s.ClassName,
+		StrokeDashArray:  s.StrokeDashArray,
+		StrokeColor:      s.StrokeColor,
+		StrokeWidth:      s.StrokeWidth,
+		StrokeLineCap:    s.StrokeLineCap,
+		StrokeLineJoin:   s.StrokeLineJoin,
+		StrokeMiterLimit: s.StrokeMiterLimit,
 	}
 }
 
@@ -441,11 +513,14 @@ func (s Style) GetDotOptions() Style {
 // GetFillAndStrokeOptions returns the fill and stroke components.
 func (s Style) GetFillAndStrokeOptions() Style {
 	return Style{
-		ClassName:       s.ClassName,
-		StrokeDashArray: s.StrokeDashArray,
-		FillColor:       s.FillColor,
-		StrokeColor:     s.StrokeColor,
-		StrokeWidth:     s.StrokeWidth,
+		ClassName:        s.ClassName,
+		StrokeDashArray:  s.StrokeDashArray,
+		FillColor:        s.FillColor,
+		StrokeColor:      s.StrokeColor,
+		StrokeWidth:      s.StrokeWidth,
+		StrokeLineCap:    s.StrokeLineCap,
+		StrokeLineJoin:   s.StrokeLineJoin,
+		StrokeMiterLimit: s.StrokeMiterLimit,
 	}
 }
 

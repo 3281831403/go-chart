@@ -24,6 +24,7 @@ type ContextStack struct {
 	FillRule    FillRule
 	Cap         LineCap
 	Join        LineJoin
+	MiterLimit  float64
 
 	FontSizePoints float64
 	Font           *truetype.Font
@@ -42,9 +43,13 @@ func NewStackGraphicContext() *StackGraphicContext {
 	gc.current.LineWidth = 1.0
 	gc.current.StrokeColor = image.Black
 	gc.current.FillColor = image.White
-	gc.current.Cap = RoundCap
+	// the historical stroker ignored caps and joins entirely, which
+	// rendered as butt caps and bevel joins; keep those as the defaults
+	// so output is unchanged unless a cap or join is set explicitly.
+	gc.current.Cap = ButtCap
+	gc.current.Join = BevelJoin
+	gc.current.MiterLimit = DefaultMiterLimit
 	gc.current.FillRule = FillRuleEvenOdd
-	gc.current.Join = RoundJoin
 	gc.current.FontSizePoints = 10
 	return gc
 }
@@ -107,6 +112,11 @@ func (gc *StackGraphicContext) SetLineCap(cap LineCap) {
 // SetLineJoin sets the line join.
 func (gc *StackGraphicContext) SetLineJoin(join LineJoin) {
 	gc.current.Join = join
+}
+
+// SetMiterLimit sets the miter limit.
+func (gc *StackGraphicContext) SetMiterLimit(miterLimit float64) {
+	gc.current.MiterLimit = miterLimit
 }
 
 // SetLineDash sets the line dash.
@@ -193,6 +203,7 @@ func (gc *StackGraphicContext) Save() {
 	context.DashOffset = gc.current.DashOffset
 	context.Cap = gc.current.Cap
 	context.Join = gc.current.Join
+	context.MiterLimit = gc.current.MiterLimit
 	context.Path = gc.current.Path.Copy()
 	context.Font = gc.current.Font
 	context.Scale = gc.current.Scale

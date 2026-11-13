@@ -7,6 +7,9 @@ const (
 	DefaultChartWidth = 1024
 	// DefaultStrokeWidth is the default chart stroke width.
 	DefaultStrokeWidth = 0.0
+	// DefaultStrokeMiterLimit is the default ratio of the miter length to
+	// half the stroke width before a miter join degrades to a bevel join.
+	DefaultStrokeMiterLimit = 4.0
 	// DefaultDotWidth is the default chart dot width.
 	DefaultDotWidth = 0.0
 	// DefaultSeriesLineWidth is the default line width.
